@@ -1,4 +1,5 @@
 title: medigo
+baseurl: /medigo
 description: medigo is a simple, responsive client for Medium.
 show_downloads: true
 google_analytics:
