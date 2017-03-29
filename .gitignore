@@ -1,6 +1,4 @@
-bin
-.medium.json
-medium-go
-medigo
-cayman
-tt
+_site
+.sass-cache
+Gemfile.lock
+*.gem

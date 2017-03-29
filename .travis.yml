@@ -1,17 +1,7 @@
-language: go
+language: ruby
+cache: bundler
+sudo: false
+rvm: 2.2
 
-go:
-        - 1.7
-
-branches:
-        only: master
-
-before_install:
-        - go get -t -v ./...
-        - go get -v github.com/mitchellh/gox
-        - go get -v github.com/tcnksm/ghr
-
-script:
-        - gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}" -ldflags="-X main.cid=$CLIENT_ID -X main.secret=$CLIENT_SECRET"
-        - sh scripts/package.sh
-        - ghr --username syui --token $GITHUB_TOKEN `git tag | tail -1` dist/
+install: script/bootstrap
+script: script/cibuild
