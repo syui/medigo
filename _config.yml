@@ -1,5 +1,6 @@
 title: medigo
 baseurl: /medigo
+url: https://syui.github.io/medigo
 description: medigo is a simple, responsive client for Medium.
 show_downloads: true
 google_analytics:
