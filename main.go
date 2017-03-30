@@ -7,11 +7,14 @@ import (
 	"time"
 	"syscall"
 	"io/ioutil"
+	"net/http"
+	"strings"
 	"encoding/json"
 	"path/filepath"
 	"golang.org/x/crypto/ssh/terminal"
 	"github.com/urfave/cli"
-	"github.com/medium/medium-sdk-go"
+	//"github.com/medium/medium-sdk-go"
+	"github.com/syui/medium-sdk-go"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/hokaccha/go-prettyjson"
 	//cregex "github.com/mingrammer/commonregex"
@@ -39,6 +42,23 @@ type PostConfig struct {
 	CanonicalURL	string		`json:"url"`
 }
 
+// UserJSON date
+type UserJSON struct {
+        ID       string `json:"id"`
+        ImageURL string `json:"imageUrl"`
+        Name     string `json:"name"`
+        URL      string `json:"url"`
+        Username string `json:"username"`
+}
+
+// Post date
+type Post struct {
+	CanonicalURL	string `json:"canonicalUrl"`
+	Content		string `json:"content"`
+	ID		string `json:"id"`
+	MediumURL	string `json:"mediumUrl"`
+}
+
 var cid string
 var secret string
 var token string
@@ -56,6 +76,8 @@ func main() {
 	var s Self
 	var o Oauth
 	var b PostConfig
+	var userjson UserJSON
+
 	callurl := "https://syui.github.io/medigo/callback/medium"
 
 	app := cli.NewApp()
@@ -70,6 +92,8 @@ func main() {
 	dirFile := filepath.Join(dir, "body.json")
 	dirConf := filepath.Join(dir, ".medium.json")
 	dirSelf := filepath.Join(dir, ".self.json")
+	dirUser := filepath.Join(dir, "user.json")
+	dirArticle := filepath.Join(dir, "article.json")
 
 	if e := os.MkdirAll(dirPost, os.ModePerm); e != nil {
 		panic(e)
@@ -79,7 +103,7 @@ func main() {
 	_, e := os.Stat(dirConf)
 	if e != nil {
 		url := m.GetAuthorizationURL("secretstate", callurl,
-		medium.ScopeBasicProfile, medium.ScopePublishPost)
+		medium.ScopeBasicProfile, medium.ScopePublishPost, medium.ScopeListPublications)
 		println(url)
 		time.Sleep(1 * time.Second)
 		open.Run(url)
@@ -145,7 +169,7 @@ func main() {
 	// Refresh Token : dirConf(ctime -49)
 	rt, e := m.ExchangeRefreshToken(o.RefreshToken)
 	if e != nil {
-	log.Fatal(e)
+		log.Fatal(e)
 	}
 	outputRF, e := json.Marshal(&rt)
 	if e != nil {
@@ -255,6 +279,12 @@ func main() {
 			Usage:   "user info",
 			Aliases: []string{"u"},
 			Action:  func(c *cli.Context) error {
+				outputJSON, e := json.Marshal(&u)
+				if e != nil {
+					panic(e)
+				}
+				ioutil.WriteFile(dirUser, outputJSON, os.ModePerm)
+
 				ju, _ := prettyjson.Marshal(u)
 				fmt.Println(string(ju))
 				return nil
@@ -266,7 +296,7 @@ func main() {
 			Aliases: []string{"o"},
 			Action:  func(c *cli.Context) error {
 				url := m.GetAuthorizationURL("secretstate", callurl,
-				medium.ScopeBasicProfile, medium.ScopePublishPost)
+				medium.ScopeBasicProfile, medium.ScopePublishPost, medium.ScopeListPublications)
 				println(url)
 				time.Sleep(1 * time.Second)
 				open.Run(url)
@@ -324,6 +354,39 @@ func main() {
 
 				fmt.Printf("\nRefresh token done %s\n", jrt)
 				ioutil.WriteFile(dirConf, outputRF, os.ModePerm)
+				return nil
+			},
+		},
+		{
+			Name:    "article",
+			Usage:   "get user publications",
+			Aliases: []string{"a"},
+			Action:  func(c *cli.Context) error {
+				userbody,e := ioutil.ReadFile(dirUser)
+				if e != nil {
+					fmt.Printf("File eor: %v\n", e)
+					os.Exit(1)
+				}
+				json.Unmarshal(userbody, &userjson)
+				userurl := userjson.URL
+				url := fmt.Sprintln(userurl, "/latest")
+				url = strings.TrimSpace(url)
+				req, _ := http.NewRequest("GET",url, nil)
+				req.Header.Set("Accept", "application/json")
+				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", m.AccessToken))
+				client := new(http.Client)
+				resp, e := client.Do(req)
+				if e != nil {
+					panic(e)
+				}
+				defer resp.Body.Close()
+				body, _ := ioutil.ReadAll(resp.Body)
+				body = body[16:] //"payload":
+				//jbody, _ := prettyjson.Marshal(body)
+				//fmt.Println(string(jbody))
+				fmt.Printf("%s", body)
+				ioutil.WriteFile(dirArticle, body, os.ModePerm)
+
 				return nil
 			},
 		},

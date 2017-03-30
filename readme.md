@@ -49,3 +49,14 @@ $ go run -ldflags "-X main.cid=xxx -X main.secret=xxx" main.go
 $ go build -ldflags "-X main.cid=xxx -X main.secret=xxx"
 ```
 
+https://github.com/Medium/medium-api-docs
+
+```
+## publications
+scope +listPublications	
+GET https://api.medium.com/v1/users/{{userId}}/publications
+
+## contributors
+GET https://api.medium.com/v1/publications/{{publicationId}}/contributors
+```
+
