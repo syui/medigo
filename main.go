@@ -90,7 +90,7 @@ func main() {
     callurl := "https://syui.github.io/medigo/callback/medium"
 
     app := cli.NewApp()
-    app.Version = "0.2"
+    app.Version = "0.3"
     dir := filepath.Join(os.Getenv("HOME"), ".config", "medigo")
     dirPost := filepath.Join(dir, "posts")
     dirFile := filepath.Join(dir, "body.json")
