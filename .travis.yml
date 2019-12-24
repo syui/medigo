@@ -1,7 +1,8 @@
 language: go
 
 go:
-        - 1.7
+        - "1.13"
+        - master
 
 branches:
         only: master
@@ -13,4 +14,4 @@ before_install:
 
 script:
         - gox -output "dist/{{.OS}}_{{.Arch}}_{{.Dir}}" -ldflags="-X main.cid=$CLIENT_ID -X main.secret=$CLIENT_SECRET"
-        - ghr --username syui --token $GITHUB_TOKEN --replace --prerelease --debug pre-release dist/
+        - ghr --username syui --token $GITHUB_TOKEN --replace --debug 0.2 dist/

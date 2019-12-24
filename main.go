@@ -12,7 +12,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"golang.org/x/crypto/ssh/terminal"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	//"github.com/medium/medium-sdk-go"
 	"github.com/syui/medium-sdk-go"
 	"github.com/skratchdot/open-golang/open"
@@ -81,7 +81,7 @@ func main() {
 	// Go to https://medium.com/me/applications to get your applicationId and applicationSecret.
 	// Self-Issued Access Tokens : https://github.com/Medium/medium-api-docs#22-self-issued-access-tokens
 
-	var s Self
+	//var s Self
 	var o Oauth
 	var b PostConfig
 	var userjson UserJSON
@@ -90,16 +90,11 @@ func main() {
 	callurl := "https://syui.github.io/medigo/callback/medium"
 
 	app := cli.NewApp()
-	app.Version = "0.1"
-	cli.HelpFlag = cli.BoolFlag{
-		Name: "help",
-		Usage: "sub-commands : $ medigo p d # post draft",
-
-	}
+	app.Version = "0.2"
 	dir := filepath.Join(os.Getenv("HOME"), ".config", "medigo")
 	dirPost := filepath.Join(dir, "posts")
 	dirFile := filepath.Join(dir, "body.json")
-	dirConf := filepath.Join(dir, ".medium.json")
+	dirConf := filepath.Join(dir, "medium.json")
 	dirSelf := filepath.Join(dir, ".self.json")
 	dirUser := filepath.Join(dir, "user.json")
 	dirArti := filepath.Join(dir, "article.json")
@@ -170,11 +165,11 @@ func main() {
 	m.AccessToken = m2.AccessToken
 
 	u, e := m2.GetUser()
-	if e != nil {
-		fmt.Printf("rm %s\n", dirConf)
-		os.Remove(dirConf)
-		log.Fatal(e)
-	}
+	//if e != nil {
+	//	fmt.Printf("rm %s\n", dirConf)
+	//	os.Remove(dirConf)
+	//	log.Fatal(e)
+	//}
 
 	// Refresh Token : dirConf(ctime -49)
 	rt, e := m.ExchangeRefreshToken(o.RefreshToken)
@@ -187,7 +182,7 @@ func main() {
 	}
 	ioutil.WriteFile(dirConf, outputRF, os.ModePerm)
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:    "post",
 			Aliases: []string{"p"},
@@ -204,8 +199,8 @@ func main() {
 				fmt.Println(string(bodyfile))
 				return nil
 			},
-			Subcommands: cli.Commands{
-				cli.Command{
+	    		Subcommands: []*cli.Command{
+			    {
 					Name:   "draft",
 					Usage:   "draft",
 					Aliases: []string{"d"},
@@ -227,7 +222,7 @@ func main() {
 						return nil
 					},
 				},
-				cli.Command{
+				{
 					Name:   "public",
 					Usage:   "public",
 					Aliases: []string{"p"},
@@ -255,40 +250,10 @@ func main() {
 		{
 			Name:    "key",
 			Aliases: []string{"k"},
-			Usage:   "token json\n\t\tsub-command : AccessToken(a), RefreshToken(r), SelfToken(s)",
 			Action:  func(c *cli.Context) error {
 				jo, _ := prettyjson.Marshal(o)
 				fmt.Println(string(jo))
 				return nil
-			},
-			Subcommands: cli.Commands{
-				cli.Command{
-					Name:   "access",
-					Usage:   "AccessToken",
-					Aliases: []string{"a"},
-					Action:  func(c *cli.Context) error {
-						fmt.Println(o.AccessToken)
-						return nil
-					},
-				},
-				cli.Command{
-					Name:   "refresh",
-					Usage:   "RefreshToken",
-					Aliases: []string{"r"},
-					Action:  func(c *cli.Context) error {
-						fmt.Println(o.RefreshToken)
-						return nil
-					},
-				},
-				cli.Command{
-					Name:   "self",
-					Usage:   "SelfToken",
-					Aliases: []string{"s"},
-					Action:  func(c *cli.Context) error {
-						fmt.Println(s.SelfToken)
-						return nil
-					},
-				},
 			},
 		},
 		{
