@@ -14,7 +14,7 @@ import (
     "golang.org/x/crypto/ssh/terminal"
     "github.com/urfave/cli/v2"
     //"github.com/medium/medium-sdk-go"
-    "github.com/syui/medium-sdk-go"
+    "github.com/medium/medium-sdk-go"
     "github.com/skratchdot/open-golang/open"
     "github.com/hokaccha/go-prettyjson"
     //cregex "github.com/mingrammer/commonregex"
